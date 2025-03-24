@@ -7,9 +7,9 @@ import ru.practicum.shareit.exceptions.ForbiddenException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemDao;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.ItemDtoMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -22,11 +22,13 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemDao itemRepository;
     private final UserService userService;
+    private final ItemDtoMapper itemDtoMapper;
+    private final UserDtoMapper userDtoMapper;
 
     @Override
     public List<ItemDto> getItemsByOwner(Long ownerId) {
         return itemRepository.getByOwner(ownerId).stream()
-                             .map(ItemMapper::toItemDto)
+                             .map(itemDtoMapper::toItemDto)
                              .collect(Collectors.toList());
     }
 
@@ -35,7 +37,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.getById(itemId)
                                   .orElseThrow(() -> new NotFoundException("Item with id = " + itemId + " not found"));
 
-        return ItemMapper.toItemDto(item);
+        return itemDtoMapper.toItemDto(item);
     }
 
     @Override
@@ -45,13 +47,13 @@ public class ItemServiceImpl implements ItemService {
         }
 
         return itemRepository.search(query).stream()
-                             .map(ItemMapper::toItemDto)
+                             .map(itemDtoMapper::toItemDto)
                              .collect(Collectors.toList());
     }
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
-        User owner = UserMapper.fromUserDto(userService.getUserById(ownerId));
+        User owner = userDtoMapper.fromUserDto(userService.getUserById(ownerId));
         if (itemDto.getName() == null || itemDto.getName().isEmpty()) {
             throw new BadRequestException("Name can not be empty");
         }
@@ -61,9 +63,10 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() == null) {
             throw new BadRequestException("Available can not be empty");
         }
-        Item item = ItemMapper.fromItemDto(itemDto, owner, null);
+//        Item item = ItemMapper.fromItemDto(itemDto, owner, null);
+        Item item = itemDtoMapper.fromItemDto(itemDto, owner, null);
 
-        return ItemMapper.toItemDto(itemRepository.create(item));
+        return itemDtoMapper.toItemDto(itemRepository.create(item));
     }
 
     @Override
@@ -83,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDto.getAvailable());
         }
 
-        return ItemMapper.toItemDto(itemRepository.update(itemId, item));
+        return itemDtoMapper.toItemDto(itemRepository.update(itemId, item));
     }
 
     @Override

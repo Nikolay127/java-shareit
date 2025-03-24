@@ -6,7 +6,7 @@ import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dao.UserDao;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -16,11 +16,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserDao userRepository;
+    private final UserDtoMapper userDtoMapper;
 
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository.getAll().stream()
-                             .map(UserMapper::toUserDto)
+                             .map(userDtoMapper::toUserDto)
                              .collect(Collectors.toList());
     }
 
@@ -28,14 +29,14 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserById(Long id) {
         User user = userRepository.getById(id)
                                   .orElseThrow(() -> new NotFoundException("User with id = " + id + " not found"));
-        return UserMapper.toUserDto(user);
+        return userDtoMapper.toUserDto(user);
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
         throwIfExists(userDto.getEmail(), null);
-        User user = userRepository.create(UserMapper.fromUserDto(userDto));
-        return UserMapper.toUserDto(user);
+        User user = userRepository.create(userDtoMapper.fromUserDto(userDto));
+        return userDtoMapper.toUserDto(user);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
         if (userDto.getEmail() != null && !userDto.getEmail().equals(userDtoExisted.getEmail())) {
             throwIfExists(userDto.getEmail(), id);
         }
-        return UserMapper.toUserDto(userRepository.update(id, UserMapper.fromUserDto(userDto)));
+        return userDtoMapper.toUserDto(userRepository.update(id, userDtoMapper.fromUserDto(userDto)));
     }
 
     @Override

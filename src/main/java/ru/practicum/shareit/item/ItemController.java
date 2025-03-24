@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -27,36 +29,37 @@ public class ItemController {
     private static final String HEADER_USER_ID = "X-Sharer-User-Id";
 
     @GetMapping
-    public List<ItemDto> getAllItemsByOwner(@RequestHeader(HEADER_USER_ID) Long ownerId) {
-        return itemService.getItemsByOwner(ownerId);
+    public ResponseEntity<List<ItemDto>> getAllItemsByOwner(@RequestHeader(HEADER_USER_ID) Long ownerId) {
+        return ResponseEntity.ok().body(itemService.getItemsByOwner(ownerId));
     }
 
     @GetMapping("{itemId}")
-    public ItemDto getItemById(@PathVariable Long itemId) {
-        return itemService.getItemById(itemId);
+    public ResponseEntity<ItemDto> getItemById(@PathVariable Long itemId) {
+        return ResponseEntity.ok().body(itemService.getItemById(itemId));
     }
 
     @GetMapping("search")
-    public List<ItemDto> searchItems(@RequestParam String text) {
-        return itemService.searchItems(text);
+    public ResponseEntity<List<ItemDto>> searchItems(@RequestParam String text) {
+        return ResponseEntity.ok().body(itemService.searchItems(text));
     }
 
     @PostMapping
-    public ItemDto createItem(@RequestHeader(HEADER_USER_ID) Long userId,
+    public ResponseEntity<ItemDto> createItem(@RequestHeader(HEADER_USER_ID) Long userId,
                               @Validated({Marker.OnCreate.class}) @NotNull @RequestBody ItemDto itemDto) {
-        return itemService.createItem(itemDto, userId);
+        ItemDto createdItem = itemService.createItem(itemDto, userId);
+        return ResponseEntity.created(URI.create("/items/" + createdItem.getId())).body(createdItem);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestHeader(HEADER_USER_ID) Long userId,
+    public ResponseEntity<ItemDto> updateItem(@RequestHeader(HEADER_USER_ID) Long userId,
                               @PathVariable Long itemId,
                               @Validated(Marker.OnUpdate.class) @NotNull @RequestBody ItemDto itemDto) {
-        return itemService.updateItem(itemDto, itemId, userId);
+        return ResponseEntity.ok().body(itemService.updateItem(itemDto, itemId, userId));
     }
 
     @DeleteMapping("/{itemId}")
-    public ItemDto deleteItem(@RequestHeader(HEADER_USER_ID) Long userId,
+    public ResponseEntity<ItemDto> deleteItem(@RequestHeader(HEADER_USER_ID) Long userId,
                               @PathVariable Long itemId) {
-        return itemService.deleteItem(itemId, userId);
+        return ResponseEntity.ok().body(itemService.deleteItem(itemId, userId));
     }
 }
