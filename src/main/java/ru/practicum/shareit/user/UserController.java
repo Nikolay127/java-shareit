@@ -31,8 +31,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Validated({Marker.OnCreate.class}) @NotNull @RequestBody UserDto userDto) {
         UserDto createdUser = userService.createUser(userDto);
-        return ResponseEntity.created(URI.create("/users/"+ createdUser.getId())).
-                body(createdUser);
+        return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
     }
 
     @PatchMapping("/{id}")
